@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useRef } from "react";
 
 function App() {
   const [entries, setEntries] = useState([]);
@@ -6,19 +6,24 @@ function App() {
   const [desc, setDesc] = useState("");
   const [amount, setAmount] = useState(0);
 
-  const incomeFunds = entries
-    .filter((entry) => entry.type === "inc")
+  const incomeEntries = entries.filter((entry) => entry.type === "inc");
+  const expenseEntries = entries.filter((entry) => entry.type === "exp");
+
+  const incomeFunds = incomeEntries
     .map((entry) => Number(entry.amount))
     .reduce((acc, curr) => acc + curr, 0);
 
-  const expenseFunds = entries
-    .filter((entry) => entry.type === "exp")
+  const expenseFunds = expenseEntries
     .map((entry) => Number(entry.amount))
     .reduce((acc, curr) => acc + curr, 0);
 
   const availableFunds = incomeFunds - expenseFunds;
 
-  function addEntry() {
+  const percentage = Math.round((expenseFunds / incomeFunds) * 100);
+
+  function addEntry(e) {
+    e.preventDefault();
+
     if (desc === "" || amount === 0) {
       alert("Please fill in all fields!");
       return;
@@ -37,29 +42,16 @@ function App() {
         minute: "2-digit",
       }),
     };
+
     setEntries([...entries, newEntry]);
+
     setDesc("");
     setAmount(0);
-    // q: how to shorten the date in newEntry.time?
-    // a: use toLocaleString() method
-    // q: how to shorten the year in newEntry.time?
-    // a: use toLocaleString() method with options
-    // q: show me the options needed to shorten the year in newEntry.time
-    // a: { year: "2-digit" }
-    // q: do I need the first argument in toLocaleString() method?
-    // a: no, it's optional
-    // q: how to shorten the time only to two digits hours and minutes and am/pm?
-    // a: use toLocaleTimeString() method with options
-    // q: show me the options needed to shorten the time in newEntry.time
-    // a: { hour: "2-digit", minute: "2-digit" }
-    // q: how to make months in abbreviations?
-    // a: use toLocaleString() method with options
-    // q: show me the options needed to make months in abbreviations in newEntry.time
-    // a: { month: "short" }
-    // q: how to add dash between day, month and year in newEntry.time?
-    // a: use toLocaleString() method with options
-    // q: show me the options needed to add dash between day, month and year in newEntry.time
-    // a: { day: "2-digit", month: "short", year: "2-digit" }
+  }
+
+  function deleteEntry(id) {
+    const filteredEntries = entries.filter((entry) => entry.id !== id);
+    setEntries(filteredEntries);
   }
 
   return (
@@ -76,7 +68,11 @@ function App() {
         </Amount>
         <Amount bgColor="orangered">
           <span className="label-span">Expense: </span> <h3>{expenseFunds}</h3>
-          <span className="label-span"> 20%</span>
+          <span className="label-span">
+            {isNaN(percentage) || percentage === Infinity
+              ? ""
+              : percentage + " %"}
+          </span>
         </Amount>
       </Amounts>
       <Inputs setType={setType} addEntry={addEntry}>
@@ -86,7 +82,7 @@ function App() {
           <label>Expense</label>
           <input type="radio" name="inputs" value={"exp"} />
         </RadioInputs>
-        <div className="other-inputs">
+        <form className="other-inputs">
           <input
             type="text"
             placeholder="Add description"
@@ -101,14 +97,36 @@ function App() {
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
           />
-          <button className="btn" onClick={addEntry}>
+          <button type="submit" className="btn" onClick={addEntry}>
             New entry
           </button>
-        </div>
+        </form>
       </Inputs>
       <div className="lists">
-        <List type="inc-list" entries={entries} />
-        <List type="exp-list" entries={entries} />
+        <div className="inc-list">
+          <h2>Income</h2>
+          {incomeEntries.length === 0 ? (
+            "No income entries"
+          ) : (
+            <List
+              type="inc-list"
+              entries={incomeEntries}
+              deleteEntry={deleteEntry}
+            />
+          )}
+        </div>
+        <div className="exp-list">
+          <h2>Expense</h2>
+          {expenseEntries.length === 0 ? (
+            "No expense entries"
+          ) : (
+            <List
+              type="exp-list"
+              entries={expenseEntries}
+              deleteEntry={deleteEntry}
+            />
+          )}
+        </div>
       </div>
     </div>
   );
@@ -142,23 +160,21 @@ function Inputs({ children }) {
   return <div className="inputs-div">{children}</div>;
 }
 
-function List({ type, entries }) {
+function List({ type, entries, deleteEntry }) {
   return (
     <div className="single-list">
-      {type === "inc-list" ? <h2>Income</h2> : <h2>Expense</h2>}
       <ul className={`list ${type}`}>
         {entries.map((entry) => (
-          <ListItem entry={entry} />
+          <ListItem entry={entry} key={entry.id} deleteEntry={deleteEntry} />
         ))}
-        {/* <ListItem entries={entries} /> */}
       </ul>
     </div>
   );
 }
 
-function ListItem({ entry }) {
+function ListItem({ entry, deleteEntry }) {
   return (
-    <li className="li-item" key={entry.id}>
+    <li className="li-item">
       {entry.desc}
       <span className="created-at">{entry.time}</span>
       <div>
@@ -174,7 +190,7 @@ function ListItem({ entry }) {
         <span className="btn-edit">
           <i className="fa-solid fa-pen-to-square" title="Edit entry"></i>
         </span>
-        <span className="btn-delete">
+        <span className="btn-delete" onClick={() => deleteEntry(entry.id)}>
           <i className="fa-solid fa-trash" title="Delete entry"></i>
         </span>
       </div>
