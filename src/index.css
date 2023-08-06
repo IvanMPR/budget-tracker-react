@@ -1,13 +1,125 @@
-body {
+*,
+*::after,
+*::before {
+  box-sizing: border-box;
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  padding: 0;
 }
 
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+body {
+  font-family: Arial, Helvetica, sans-serif;
+  background-color: #f5f5f5;
+}
+
+h1 {
+  text-align: center;
+  margin-top: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #ccc;
+}
+
+.app {
+  max-width: 1200px;
+  margin: auto;
+}
+
+.label-span {
+  display: block;
+}
+
+.amount {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 1rem auto;
+  width: 25rem;
+  padding: 0.5rem 1rem;
+}
+
+h3 {
+  margin-left: auto;
+  margin-right: 0.5rem;
+}
+
+.inputs-div {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 1rem auto;
+  width: 100%;
+  padding: 0.5rem 1rem;
+}
+
+.radio-inputs-div {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 1rem auto;
+  width: 25%;
+  padding: 0.5rem 1rem;
+}
+
+.other-inputs {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 50%;
+}
+
+.value-inputs {
+  padding: 0.5rem 1rem;
+  margin-right: 1rem;
+}
+
+.btn {
+  padding: 0.45rem 2rem;
+  cursor: pointer;
+  /* transition: all 0.2s ease-in-out; */
+}
+
+.btn:active {
+  transform: translateY(1px);
+}
+
+input[type="radio"] {
+  width: 1.3rem;
+  height: 1.3rem;
+}
+
+.lists {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 1rem auto;
+}
+
+ul {
+  list-style: none;
+  margin: 1rem auto;
+  /* width: 70%; */
+  padding: 0.5rem 1rem;
+  background-color: burlywood;
+}
+
+.li-item {
+  background-color: beige;
+  padding: 0.5rem 1rem;
+  margin-bottom: 0.5rem;
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.single-list {
+  background-color: aqua;
+  width: 49%;
+}
+
+.btn-edit {
+  margin-right: 1rem;
+}
+
+.fa-solid {
+  cursor: pointer;
 }
