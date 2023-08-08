@@ -130,6 +130,10 @@ ul {
   margin-right: 1rem;
 }
 
+.btn-info {
+  margin-right: 1rem;
+}
+
 .fa-solid {
   cursor: pointer;
 }
@@ -140,4 +144,35 @@ ul {
 
 .fa-trash:hover {
   color: red;
+}
+
+.editing-modal {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 100;
+  width: 50%;
+  height: 50%;
+  background-color: rgba(255, 255, 255, 0.9);
+  display: flex;
+  flex-direction: column;
+  text-align: center;
+}
+
+.editing-form {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  margin: 1rem auto;
+  width: 100%;
+  padding: 0.5rem 1rem;
+}
+
+.close-modal {
+  margin-left: auto;
+  margin-right: 1rem;
+  margin-top: 1rem;
+  cursor: pointer;
 }

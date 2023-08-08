@@ -1,10 +1,13 @@
-import { useState, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 
 function App() {
-  const [entries, setEntries] = useState([]);
+  const [entries, setEntries] = useState(
+    () => JSON.parse(localStorage.getItem("entries")) || []
+  );
   const [type, setType] = useState("inc");
   const [desc, setDesc] = useState("");
   const [amount, setAmount] = useState(0);
+  const [isEditing, setIsEditing] = useState(false);
 
   const incomeEntries = entries.filter((entry) => entry.type === "inc");
   const expenseEntries = entries.filter((entry) => entry.type === "exp");
@@ -50,9 +53,14 @@ function App() {
   }
 
   function deleteEntry(id) {
+    if (isEditing) return;
     const filteredEntries = entries.filter((entry) => entry.id !== id);
     setEntries(filteredEntries);
   }
+
+  useEffect(() => {
+    localStorage.setItem("entries", JSON.stringify(entries));
+  }, [entries]);
 
   return (
     <div className="app">
@@ -75,59 +83,39 @@ function App() {
           </span>
         </Amount>
       </Amounts>
-      <Inputs setType={setType} addEntry={addEntry}>
+      <Inputs
+        type={type}
+        setType={setType}
+        addEntry={addEntry}
+        desc={desc}
+        setDesc={setDesc}
+        amount={amount}
+        setAmount={setAmount}
+        entries={entries}
+      >
         <RadioInputs setType={setType}>
           <label>Income</label>
           <input type="radio" name="inputs" defaultChecked value={"inc"} />
           <label>Expense</label>
           <input type="radio" name="inputs" value={"exp"} />
         </RadioInputs>
-        <form className="other-inputs">
-          <input
-            type="text"
-            placeholder="Add description"
-            className="value-inputs"
-            value={desc}
-            onChange={(e) => setDesc(e.target.value)}
-          />
-          <input
-            type="number"
-            placeholder="Add amount"
-            className="value-inputs"
-            value={amount}
-            onChange={(e) => setAmount(e.target.value)}
-          />
-          <button type="submit" className="btn" onClick={addEntry}>
-            New entry
-          </button>
-        </form>
+        <FormInputs
+          desc={desc}
+          setDesc={setDesc}
+          amount={amount}
+          setAmount={setAmount}
+          addEntry={addEntry}
+          entries={entries}
+          type={type}
+        />
       </Inputs>
-      <div className="lists">
-        <div className="inc-list">
-          <h2>Income</h2>
-          {incomeEntries.length === 0 ? (
-            "No income entries"
-          ) : (
-            <List
-              type="inc-list"
-              entries={incomeEntries}
-              deleteEntry={deleteEntry}
-            />
-          )}
-        </div>
-        <div className="exp-list">
-          <h2>Expense</h2>
-          {expenseEntries.length === 0 ? (
-            "No expense entries"
-          ) : (
-            <List
-              type="exp-list"
-              entries={expenseEntries}
-              deleteEntry={deleteEntry}
-            />
-          )}
-        </div>
-      </div>
+      <ListsParent
+        incomeEntries={incomeEntries}
+        expenseEntries={expenseEntries}
+        deleteEntry={deleteEntry}
+        isEditing={isEditing}
+        setIsEditing={setIsEditing}
+      />
     </div>
   );
 }
@@ -156,27 +144,117 @@ function RadioInputs({ children, setType }) {
   );
 }
 
+function FormInputs(props) {
+  const descriptionInput = useRef(null);
+
+  useEffect(() => {
+    descriptionInput.current.focus();
+  }, [props.type, props.entries]);
+
+  return (
+    <form className="other-inputs">
+      <input
+        type="text"
+        placeholder="Add description"
+        className="value-inputs"
+        value={props.desc}
+        onChange={(e) => props.setDesc(e.target.value)}
+        ref={descriptionInput}
+      />
+      <input
+        type="number"
+        placeholder="Add amount"
+        className="value-inputs"
+        value={props.amount}
+        onChange={(e) => props.setAmount(e.target.value)}
+      />
+      <button type="submit" className="btn" onClick={props.addEntry}>
+        New entry
+      </button>
+    </form>
+  );
+}
+
 function Inputs({ children }) {
   return <div className="inputs-div">{children}</div>;
 }
 
-function List({ type, entries, deleteEntry }) {
+function ListsParent({
+  isEditing,
+  setIsEditing,
+  incomeEntries,
+  expenseEntries,
+  deleteEntry,
+}) {
+  return (
+    <div className="lists">
+      <div className="inc-list">
+        <h2>Income</h2>
+        {incomeEntries.length === 0 ? (
+          "No income entries"
+        ) : (
+          <List
+            type="inc-list"
+            entries={incomeEntries}
+            deleteEntry={deleteEntry}
+            isEditing={isEditing}
+            setIsEditing={setIsEditing}
+          />
+        )}
+      </div>
+      <div className="exp-list">
+        <h2>Expense</h2>
+        {expenseEntries.length === 0 ? (
+          "No expense entries"
+        ) : (
+          <List
+            type="exp-list"
+            entries={expenseEntries}
+            deleteEntry={deleteEntry}
+            isEditing={isEditing}
+            setIsEditing={setIsEditing}
+          />
+        )}
+      </div>
+      {isEditing ? <EditingModal setIsEditing={setIsEditing} /> : ""}
+    </div>
+  );
+}
+
+function List({ type, entries, deleteEntry, isEditing, setIsEditing }) {
   return (
     <div className="single-list">
       <ul className={`list ${type}`}>
         {entries.map((entry) => (
-          <ListItem entry={entry} key={entry.id} deleteEntry={deleteEntry} />
+          <ListItem
+            entry={entry}
+            key={entry.id}
+            deleteEntry={deleteEntry}
+            isEditing={isEditing}
+            setIsEditing={setIsEditing}
+          />
         ))}
       </ul>
     </div>
   );
 }
 
-function ListItem({ entry, deleteEntry }) {
+function ListItem({ entry, deleteEntry, isEditing, setIsEditing }) {
+  const [showInfo, setShowInfo] = useState(false);
+
+  function handleInfo() {
+    if (isEditing) return;
+    setShowInfo(!showInfo);
+  }
+
+  function handleEdit(id) {
+    console.log(id);
+    setIsEditing(!isEditing);
+  }
   return (
     <li className="li-item">
       {entry.desc}
-      <span className="created-at">{entry.time}</span>
+      {showInfo ? <span className="created-at">{entry.time}</span> : ""}
       <div>
         <span className="item-amount">{entry.amount}</span>
       </div>
@@ -184,17 +262,52 @@ function ListItem({ entry, deleteEntry }) {
         <span className="btn-info">
           <i
             className="fa-solid fa-circle-info"
-            title="Click for additional info"
+            title={
+              isEditing
+                ? 'Can"t show info while editing'
+                : "Click for date/time info"
+            }
+            onClick={handleInfo}
           ></i>
         </span>
-        <span className="btn-edit">
-          <i className="fa-solid fa-pen-to-square" title="Edit entry"></i>
+        <span className="btn-edit" onClick={() => handleEdit(entry.id)}>
+          <i
+            className="fa-solid fa-pen-to-square"
+            title={
+              isEditing ? 'Can"t edit entry while modal is open' : "Edit entry"
+            }
+          ></i>
         </span>
         <span className="btn-delete" onClick={() => deleteEntry(entry.id)}>
-          <i className="fa-solid fa-trash" title="Delete entry"></i>
+          <i
+            className="fa-solid fa-trash"
+            title={
+              isEditing ? 'Can"t delete entry while editing' : "Delete entry"
+            }
+          ></i>
         </span>
       </div>
     </li>
+  );
+}
+
+function EditingModal({ setIsEditing }) {
+  function handleModal() {
+    setIsEditing(false);
+  }
+
+  return (
+    <div className="editing-modal" onClick={handleModal}>
+      <span className="close-modal">X</span>
+      <h2>Edit entry</h2>
+      <form className="editing-form">
+        <input type="text" placeholder={`Old desc:  `} />
+        <input type="number" placeholder={`Old amount: }`} />
+        <button type="submit" className="btn">
+          Save
+        </button>
+      </form>
+    </div>
   );
 }
 
