@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 
 function App() {
+  // state
   const [entries, setEntries] = useState(
     () => JSON.parse(localStorage.getItem("entries")) || []
   );
@@ -8,7 +9,8 @@ function App() {
   const [desc, setDesc] = useState("");
   const [amount, setAmount] = useState(0);
   const [isEditing, setIsEditing] = useState(false);
-
+  const [entryToEdit, setEntryToEdit] = useState(null);
+  // derived state
   const incomeEntries = entries.filter((entry) => entry.type === "inc");
   const expenseEntries = entries.filter((entry) => entry.type === "exp");
 
@@ -23,7 +25,7 @@ function App() {
   const availableFunds = incomeFunds - expenseFunds;
 
   const percentage = Math.round((expenseFunds / incomeFunds) * 100);
-
+  // handlers
   function addEntry(e) {
     e.preventDefault();
 
@@ -57,7 +59,7 @@ function App() {
     const filteredEntries = entries.filter((entry) => entry.id !== id);
     setEntries(filteredEntries);
   }
-
+  // effects
   useEffect(() => {
     localStorage.setItem("entries", JSON.stringify(entries));
   }, [entries]);
@@ -65,24 +67,12 @@ function App() {
   return (
     <div className="app">
       <h1>Budget Tracker App - React</h1>
-      <Amounts>
-        <Amount bgColor="lightgray">
-          <span className="label-span">Available funds: </span>
-          <h2>{availableFunds}</h2>
-        </Amount>
-        <Amount bgColor="yellowgreen">
-          <span className="label-span">Income: </span>
-          <h3>{incomeFunds}</h3>
-        </Amount>
-        <Amount bgColor="orangered">
-          <span className="label-span">Expense: </span> <h3>{expenseFunds}</h3>
-          <span className="label-span">
-            {isNaN(percentage) || percentage === Infinity
-              ? ""
-              : percentage + " %"}
-          </span>
-        </Amount>
-      </Amounts>
+      <Amounts
+        availableFunds={availableFunds}
+        incomeFunds={incomeFunds}
+        expenseFunds={expenseFunds}
+        percentage={percentage}
+      />
       <Inputs
         type={type}
         setType={setType}
@@ -115,6 +105,9 @@ function App() {
         deleteEntry={deleteEntry}
         isEditing={isEditing}
         setIsEditing={setIsEditing}
+        entryToEdit={entryToEdit}
+        setEntryToEdit={setEntryToEdit}
+        setEntries={setEntries}
       />
     </div>
   );
@@ -129,8 +122,28 @@ function Amount({ children, bgColor }) {
   );
 }
 
-function Amounts({ children }) {
-  return <>{children}</>;
+function Amounts(props) {
+  return (
+    <>
+      <Amount bgColor="lightgray">
+        <span className="label-span">Available funds: </span>
+        <h2>{props.availableFunds}</h2>
+      </Amount>
+      <Amount bgColor="yellowgreen">
+        <span className="label-span">Income: </span>
+        <h3>{props.incomeFunds}</h3>
+      </Amount>
+      <Amount bgColor="orangered">
+        <span className="label-span">Expense: </span>
+        <h3>{props.expenseFunds}</h3>
+        <span className="label-span">
+          {isNaN(props.percentage) || props.percentage === Infinity
+            ? ""
+            : props.percentage + " %"}
+        </span>
+      </Amount>
+    </>
+  );
 }
 
 function RadioInputs({ children, setType }) {
@@ -185,6 +198,9 @@ function ListsParent({
   incomeEntries,
   expenseEntries,
   deleteEntry,
+  entryToEdit,
+  setEntryToEdit,
+  setEntries,
 }) {
   return (
     <div className="lists">
@@ -195,10 +211,12 @@ function ListsParent({
         ) : (
           <List
             type="inc-list"
-            entries={incomeEntries}
+            typeOfEntries={incomeEntries}
             deleteEntry={deleteEntry}
             isEditing={isEditing}
             setIsEditing={setIsEditing}
+            setEntryToEdit={setEntryToEdit}
+            setEntries={setEntries}
           />
         )}
       </div>
@@ -209,29 +227,48 @@ function ListsParent({
         ) : (
           <List
             type="exp-list"
-            entries={expenseEntries}
+            typeOfEntries={expenseEntries}
             deleteEntry={deleteEntry}
             isEditing={isEditing}
             setIsEditing={setIsEditing}
+            setEntryToEdit={setEntryToEdit}
+            setEntries={setEntries}
           />
         )}
       </div>
-      {isEditing ? <EditingModal setIsEditing={setIsEditing} /> : ""}
+      {isEditing ? (
+        <EditingModal
+          setIsEditing={setIsEditing}
+          setEntryToEdit={setEntryToEdit}
+          entryToEdit={entryToEdit}
+          setEntries={setEntries}
+        />
+      ) : (
+        ""
+      )}
     </div>
   );
 }
 
-function List({ type, entries, deleteEntry, isEditing, setIsEditing }) {
+function List({
+  type,
+  typeOfEntries,
+  deleteEntry,
+  isEditing,
+  setIsEditing,
+  setEntryToEdit,
+}) {
   return (
     <div className="single-list">
       <ul className={`list ${type}`}>
-        {entries.map((entry) => (
+        {typeOfEntries.map((entry) => (
           <ListItem
             entry={entry}
             key={entry.id}
             deleteEntry={deleteEntry}
             isEditing={isEditing}
             setIsEditing={setIsEditing}
+            setEntryToEdit={setEntryToEdit}
           />
         ))}
       </ul>
@@ -239,7 +276,13 @@ function List({ type, entries, deleteEntry, isEditing, setIsEditing }) {
   );
 }
 
-function ListItem({ entry, deleteEntry, isEditing, setIsEditing }) {
+function ListItem({
+  entry,
+  deleteEntry,
+  isEditing,
+  setIsEditing,
+  setEntryToEdit,
+}) {
   const [showInfo, setShowInfo] = useState(false);
 
   function handleInfo() {
@@ -248,8 +291,9 @@ function ListItem({ entry, deleteEntry, isEditing, setIsEditing }) {
   }
 
   function handleEdit(id) {
-    console.log(id);
-    setIsEditing(!isEditing);
+    console.log(id, entry);
+    setEntryToEdit(entry);
+    setIsEditing(true);
   }
   return (
     <li className="li-item">
@@ -291,19 +335,51 @@ function ListItem({ entry, deleteEntry, isEditing, setIsEditing }) {
   );
 }
 
-function EditingModal({ setIsEditing }) {
-  function handleModal() {
+function EditingModal({
+  setIsEditing,
+  entryToEdit,
+  setEntryToEdit,
+  setEntries,
+}) {
+  const [newDesc, setNewDesc] = useState(entryToEdit.desc);
+  const [newAmount, setNewAmount] = useState(entryToEdit.amount);
+
+  function closeModal() {
     setIsEditing(false);
+    setEntryToEdit(null);
+  }
+
+  function handleNewDesc(e) {
+    setNewDesc(e.target.value);
+  }
+
+  function handleNewAmount(e) {
+    setNewAmount(Number(e.target.value));
+  }
+
+  function handleEditEntry(id) {
+    setEntries((entries) =>
+      entries.map((entry) =>
+        entry.id === id ? { ...entry, desc: newDesc, amount: newAmount } : entry
+      )
+    );
+    console.log("entry edited");
   }
 
   return (
-    <div className="editing-modal" onClick={handleModal}>
-      <span className="close-modal">X</span>
+    <div className="editing-modal">
+      <span className="close-modal" title="Close window" onClick={closeModal}>
+        X
+      </span>
       <h2>Edit entry</h2>
       <form className="editing-form">
-        <input type="text" placeholder={`Old desc:  `} />
-        <input type="number" placeholder={`Old amount: }`} />
-        <button type="submit" className="btn">
+        <input type="text" value={newDesc} onChange={handleNewDesc} />
+        <input type="number" value={newAmount} onChange={handleNewAmount} />
+        <button
+          type="submit"
+          className="btn"
+          onClick={() => handleEditEntry(entryToEdit.id)}
+        >
           Save
         </button>
       </form>
