@@ -170,9 +170,22 @@ ul {
   padding: 0.5rem 1rem;
 }
 
+.editing-form > input[type="text"],
+.editing-form > input[type="number"],
+.editing-form > button[type="submit"] {
+  width: 40%;
+  padding: 0.5rem 1rem;
+  margin-bottom: 1rem;
+}
+
 .close-modal {
   margin-left: auto;
   margin-right: 1rem;
   margin-top: 1rem;
   cursor: pointer;
+  transition: all 0.2s ease-out;
+}
+
+.close-modal:hover {
+  color: red;
 }

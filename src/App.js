@@ -290,8 +290,7 @@ function ListItem({
     setShowInfo(!showInfo);
   }
 
-  function handleEdit(id) {
-    console.log(id, entry);
+  function handleEdit() {
     setEntryToEdit(entry);
     setIsEditing(true);
   }
@@ -314,7 +313,7 @@ function ListItem({
             onClick={handleInfo}
           ></i>
         </span>
-        <span className="btn-edit" onClick={() => handleEdit(entry.id)}>
+        <span className="btn-edit" onClick={() => handleEdit()}>
           <i
             className="fa-solid fa-pen-to-square"
             title={
@@ -344,6 +343,12 @@ function EditingModal({
   const [newDesc, setNewDesc] = useState(entryToEdit.desc);
   const [newAmount, setNewAmount] = useState(entryToEdit.amount);
 
+  const newDescriptionInput = useRef(null);
+
+  useEffect(() => {
+    newDescriptionInput.current.focus();
+  }, []);
+
   function closeModal() {
     setIsEditing(false);
     setEntryToEdit(null);
@@ -363,7 +368,6 @@ function EditingModal({
         entry.id === id ? { ...entry, desc: newDesc, amount: newAmount } : entry
       )
     );
-    console.log("entry edited");
   }
 
   return (
@@ -373,14 +377,19 @@ function EditingModal({
       </span>
       <h2>Edit entry</h2>
       <form className="editing-form">
-        <input type="text" value={newDesc} onChange={handleNewDesc} />
+        <input
+          type="text"
+          value={newDesc}
+          onChange={handleNewDesc}
+          ref={newDescriptionInput}
+        />
         <input type="number" value={newAmount} onChange={handleNewAmount} />
         <button
           type="submit"
           className="btn"
           onClick={() => handleEditEntry(entryToEdit.id)}
         >
-          Save
+          Save Changes
         </button>
       </form>
     </div>
