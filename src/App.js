@@ -28,6 +28,7 @@ function App() {
   // handlers
   function addEntry(e) {
     e.preventDefault();
+    if (isEditing) return;
 
     if (desc === "" || amount === 0) {
       alert("Please fill in all fields!");
@@ -192,56 +193,47 @@ function Inputs({ children }) {
   return <div className="inputs-div">{children}</div>;
 }
 
-function ListsParent({
-  isEditing,
-  setIsEditing,
-  incomeEntries,
-  expenseEntries,
-  deleteEntry,
-  entryToEdit,
-  setEntryToEdit,
-  setEntries,
-}) {
+function ListsParent(props) {
   return (
     <div className="lists">
       <div className="inc-list">
         <h2>Income</h2>
-        {incomeEntries.length === 0 ? (
+        {props.incomeEntries.length === 0 ? (
           "No income entries"
         ) : (
           <List
             type="inc-list"
-            typeOfEntries={incomeEntries}
-            deleteEntry={deleteEntry}
-            isEditing={isEditing}
-            setIsEditing={setIsEditing}
-            setEntryToEdit={setEntryToEdit}
-            setEntries={setEntries}
+            typeOfEntries={props.incomeEntries}
+            deleteEntry={props.deleteEntry}
+            isEditing={props.isEditing}
+            setIsEditing={props.setIsEditing}
+            setEntryToEdit={props.setEntryToEdit}
+            setEntries={props.setEntries}
           />
         )}
       </div>
       <div className="exp-list">
         <h2>Expense</h2>
-        {expenseEntries.length === 0 ? (
+        {props.expenseEntries.length === 0 ? (
           "No expense entries"
         ) : (
           <List
             type="exp-list"
-            typeOfEntries={expenseEntries}
-            deleteEntry={deleteEntry}
-            isEditing={isEditing}
-            setIsEditing={setIsEditing}
-            setEntryToEdit={setEntryToEdit}
-            setEntries={setEntries}
+            typeOfEntries={props.expenseEntries}
+            deleteEntry={props.deleteEntry}
+            isEditing={props.isEditing}
+            setIsEditing={props.setIsEditing}
+            setEntryToEdit={props.setEntryToEdit}
+            setEntries={props.setEntries}
           />
         )}
       </div>
-      {isEditing ? (
+      {props.isEditing ? (
         <EditingModal
-          setIsEditing={setIsEditing}
-          setEntryToEdit={setEntryToEdit}
-          entryToEdit={entryToEdit}
-          setEntries={setEntries}
+          setIsEditing={props.setIsEditing}
+          setEntryToEdit={props.setEntryToEdit}
+          entryToEdit={props.entryToEdit}
+          setEntries={props.setEntries}
         />
       ) : (
         ""
@@ -250,25 +242,18 @@ function ListsParent({
   );
 }
 
-function List({
-  type,
-  typeOfEntries,
-  deleteEntry,
-  isEditing,
-  setIsEditing,
-  setEntryToEdit,
-}) {
+function List(props) {
   return (
     <div className="single-list">
-      <ul className={`list ${type}`}>
-        {typeOfEntries.map((entry) => (
+      <ul className={`list ${props.type}`}>
+        {props.typeOfEntries.map((entry) => (
           <ListItem
             entry={entry}
             key={entry.id}
-            deleteEntry={deleteEntry}
-            isEditing={isEditing}
-            setIsEditing={setIsEditing}
-            setEntryToEdit={setEntryToEdit}
+            deleteEntry={props.deleteEntry}
+            isEditing={props.isEditing}
+            setIsEditing={props.setIsEditing}
+            setEntryToEdit={props.setEntryToEdit}
           />
         ))}
       </ul>
@@ -276,38 +261,32 @@ function List({
   );
 }
 
-function ListItem({
-  entry,
-  deleteEntry,
-  isEditing,
-  setIsEditing,
-  setEntryToEdit,
-}) {
+function ListItem(props) {
   const [showInfo, setShowInfo] = useState(false);
 
   function handleInfo() {
-    if (isEditing) return;
+    if (props.isEditing) return;
     setShowInfo(!showInfo);
   }
 
   function handleEdit() {
-    setEntryToEdit(entry);
-    setIsEditing(true);
+    props.setEntryToEdit(props.entry);
+    props.setIsEditing(true);
   }
   return (
     <li className="li-item">
-      {entry.desc}
-      {showInfo ? <span className="created-at">{entry.time}</span> : ""}
+      {props.entry.desc}
+      {showInfo ? <span className="created-at">{props.entry.time}</span> : ""}
       <div>
-        <span className="item-amount">{entry.amount}</span>
+        <span className="item-amount">{props.entry.amount}</span>
       </div>
       <div>
         <span className="btn-info">
           <i
             className="fa-solid fa-circle-info"
             title={
-              isEditing
-                ? 'Can"t show info while editing'
+              props.isEditing
+                ? "Can't show info while editing"
                 : "Click for date/time info"
             }
             onClick={handleInfo}
@@ -317,15 +296,22 @@ function ListItem({
           <i
             className="fa-solid fa-pen-to-square"
             title={
-              isEditing ? 'Can"t edit entry while modal is open' : "Edit entry"
+              props.isEditing
+                ? "Can't edit entry while modal is open"
+                : "Edit entry"
             }
           ></i>
         </span>
-        <span className="btn-delete" onClick={() => deleteEntry(entry.id)}>
+        <span
+          className="btn-delete"
+          onClick={() => props.deleteEntry(props.entry.id)}
+        >
           <i
             className="fa-solid fa-trash"
             title={
-              isEditing ? 'Can"t delete entry while editing' : "Delete entry"
+              props.isEditing
+                ? "Can't delete entry while editing"
+                : "Delete entry"
             }
           ></i>
         </span>
