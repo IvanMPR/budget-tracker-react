@@ -1,0 +1,13 @@
+{
+  "files": {
+    "main.css": "/budget-tracker-react/static/css/main.2579721a.css",
+    "main.js": "/budget-tracker-react/static/js/main.14b7ff21.js",
+    "index.html": "/budget-tracker-react/index.html",
+    "main.2579721a.css.map": "/budget-tracker-react/static/css/main.2579721a.css.map",
+    "main.14b7ff21.js.map": "/budget-tracker-react/static/js/main.14b7ff21.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.2579721a.css",
+    "static/js/main.14b7ff21.js"
+  ]
+}
