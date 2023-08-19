@@ -349,11 +349,16 @@ function EditingModal({
   }
 
   function handleEditEntry(id) {
+    if (newDesc === "" || newAmount === 0) {
+      alert("Please fill out both fields");
+      return;
+    }
     setEntries((entries) =>
       entries.map((entry) =>
         entry.id === id ? { ...entry, desc: newDesc, amount: newAmount } : entry
       )
     );
+    setIsEditing(false);
   }
 
   return (
@@ -373,7 +378,10 @@ function EditingModal({
         <button
           type="submit"
           className="btn"
-          onClick={() => handleEditEntry(entryToEdit.id)}
+          onClick={(e) => {
+            e.preventDefault();
+            handleEditEntry(entryToEdit.id);
+          }}
         >
           Save Changes
         </button>
